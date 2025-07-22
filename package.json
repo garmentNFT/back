@@ -1,0 +1,21 @@
+{
+  "name": "awesome-javascript",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "ahranah <window765@khu.ac.kr>",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "ipfs-http-client": "^60.0.1",
+    "node-fetch": "^3.3.2",
+    "web3": "^4.16.0"
+  },
+  "repository": "https://github.com/garmentNFT/back.git"
+}
