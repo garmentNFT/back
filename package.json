@@ -1,21 +1,20 @@
 {
-  "name": "awesome-javascript",
+  "name": "login-server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
+    "start": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "ahranah <window765@khu.ac.kr>",
   "license": "MIT",
-  "description": "",
+  "description": "Simple login server with Supabase",
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.0",
+    "@supabase/supabase-js": "^2.53.0",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "ipfs-http-client": "^60.0.1",
-    "node-fetch": "^3.3.2",
-    "web3": "^4.16.0"
-  },
-  "repository": "https://github.com/garmentNFT/back.git"
+    "jsonwebtoken": "^9.0.2"
+  }
 }
