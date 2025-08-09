@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import userRoutes from './routes/userRoutes.js';
-import metamaskRoutes from './routes/metamaskRoutes.js';
+import walletRoutes from './routes/walletRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -15,8 +15,8 @@ app.get('/', (req, res) => {
   res.send('GarmentNFT API is running');
 });
 
-app.use('/api/users', userRoutes);
-app.use('/api/metamask', metamaskRoutes);
+app.use('/api', authRoutes);
+app.use('/api/users', walletRoutes); 
 
 const PORT = process.env.PORT || 5050;
 
