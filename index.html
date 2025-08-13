@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Garment NFT - Full Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        pre { background-color: #f0f0f0; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; font-size: 12px; }
+        .hidden { display: none; }
+        button { padding: 10px 15px; font-size: 16px; cursor: pointer; margin-top: 5px; }
+        input, textarea { width: 98%; padding: 8px; font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Garment NFT</h1>
+
+    <div id="login-section">
+        <p>서비스를 이용하려면 먼저 구글 계정으로 로그인해주세요.</p>
+        <button onclick="loginWithGoogle()">Google 계정으로 로그인</button>
+    </div>
+
+    <div id="main-section" class="hidden">
+        <hr>
+        <h2>인증 상태:</h2>
+        <pre id="auth-status">로그인 대기 중...</pre>
+        
+        <hr>
+        <h2>프로필 관리</h2>
+        <div id="profile-section">
+            <div>
+                <label for="nickname-input">닉네임:</label>
+                <input type="text" id="nickname-input" placeholder="새로운 닉네임을 입력하세요">
+            </div>
+            <div style="margin-top: 10px;">
+                <label for="bio-input">자기소개:</label>
+                <textarea id="bio-input" rows="3" placeholder="자기소개를 입력하세요 (선택)"></textarea>
+            </div>
+            <button onclick="updateProfile()">프로필 저장하기</button>
+            <pre id="profile-status">프로필 정보를 불러오는 중...</pre>
+        </div>
+
+        <hr>
+        <h2>지갑 연동</h2>
+        <div id="wallet-section">
+            <p>이제 당신의 MetaMask 지갑을 계정에 연결하세요.</p>
+            <button onclick="linkWallet()">MetaMask 지갑 연결하기</button>
+            <pre id="wallet-status">연결 대기 중...</pre>
+        </div>
+    </div>
+
+
+    <script>
+        // --- 기본 설정 ---
+        const SUPABASE_URL = 'https://ssjamldabxxymustdcaw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzamFtbGRhYnh4eW11c3RkY2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyODU5ODcsImV4cCI6MjA2OTg2MTk4N30.guuVLX2yI-WC9jVTKh9fzfK78so5kdsd9GJ6CqUP_Iw'; // 🚨 반드시 본인의 anon 키로 변경해주세요!
+        const BACKEND_URL = 'http://localhost:5050';
+
+        const { createClient } = supabase;
+        const mySupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- HTML 요소 가져오기 (프로필 관련 요소 추가) ---
+        const loginSection = document.getElementById('login-section');
+        const mainSection = document.getElementById('main-section');
+        const authStatus = document.getElementById('auth-status');
+        const walletStatus = document.getElementById('wallet-status');
+        const profileStatus = document.getElementById('profile-status');
+        const nicknameInput = document.getElementById('nickname-input');
+        const bioInput = document.getElementById('bio-input');
+
+        let accessToken = null;
+
+        // --- 함수 정의 ---
+
+        // 구글 로그인 시작 함수
+        async function loginWithGoogle() { /* ...기존 코드와 동일... */ }
+
+        // 지갑 연동 메인 함수
+        async function linkWallet() { /* ...기존 코드와 동일... */ }
+
+        // --- 프로필 관리 함수 (새로 추가) ---
+
+        // 3. 내 프로필 정보 불러오기
+        async function getProfile() {
+            if (!accessToken) return;
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/users/me`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (!response.ok) throw new Error('프로필 정보 로딩 실패');
+                
+                const profile = await response.json();
+                nicknameInput.value = profile.public_username;
+                bioInput.value = profile.bio || '';
+                profileStatus.textContent = '프로필 정보가 성공적으로 로드되었습니다.';
+
+            } catch (error) {
+                profileStatus.textContent = `오류: ${error.message}`;
+            }
+        }
+
+        // 4. 프로필 정보 업데이트
+        async function updateProfile() {
+            if (!accessToken) return;
+            
+            const newNickname = nicknameInput.value;
+            const newBio = bioInput.value;
+            profileStatus.textContent = '프로필 업데이트 중...';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/users/me/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({ nickname: newNickname, bio: newBio })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || '프로필 업데이트 실패');
+                }
+                
+                profileStatus.textContent = `🎉 성공!\n\n${result.message}`;
+                // 업데이트 성공 후, 최신 정보를 다시 불러옵니다.
+                await getProfile();
+
+            } catch (error) {
+                profileStatus.textContent = `오류: ${error.message}`;
+            }
+        }
+
+
+        // --- 인증 상태 감지 및 UI 변경 ---
+        mySupabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                loginSection.classList.add('hidden');
+                mainSection.classList.remove('hidden');
+
+                accessToken = session.access_token;
+                authStatus.textContent = '로그인 성공!\n\n[Access Token]\n' + accessToken;
+                
+                try {
+                    // 1. 백엔드에 프로필 동기화를 먼저 요청합니다.
+                    profileStatus.textContent = "사용자 프로필 동기화 중...";
+                    const syncResponse = await fetch(`${BACKEND_URL}/api/users/sync-profile`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`
+                        },
+                        body: JSON.stringify({ userMetaData: session.user.user_metadata })
+                    });
+
+                    if (!syncResponse.ok) {
+                        const errorResult = await syncResponse.json();
+                        throw new Error(errorResult.message || '프로필 동기화 실패');
+                    }
+                    console.log("프로필 동기화 완료!");
+
+                    // 2. 동기화가 성공한 후에, 최신 프로필 정보를 불러옵니다.
+                    await getProfile();
+
+                } catch (error) {
+                    profileStatus.textContent = `오류 발생: ${error.message}`;
+                    console.error('초기 설정 실패:', error);
+                }
+
+            } else if (event === 'SIGNED_OUT') {
+                // --- 로그아웃 처리 (기존과 동일) ---
+                loginSection.classList.remove('hidden');
+                mainSection.classList.add('hidden');
+                accessToken = null;
+                authStatus.textContent = '로그아웃 상태입니다.';
+                nicknameInput.value = '';
+                bioInput.value = '';
+            }
+        });
+
+        // --- 기존 함수들은 여기에 그대로 복사 ---
+        async function loginWithGoogle() {
+            await mySupabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: 'http://localhost:5173/' }
+            });
+        }
+        async function linkWallet() {
+            walletStatus.textContent = '지갑 연결을 시작합니다... MetaMask를 확인해주세요.';
+            if (!accessToken) {
+                walletStatus.textContent = '오류: 먼저 소셜 로그인을 완료해야 합니다.';
+                return;
+            }
+            try {
+                walletStatus.textContent = '1/3: 서명에 필요한 메시지를 요청하는 중...';
+                const nonceResponse = await fetch(`${BACKEND_URL}/api/users/me/wallets/nonce`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (!nonceResponse.ok) throw new Error('Nonce 요청 실패');
+                const { nonce } = await nonceResponse.json();
+                walletStatus.textContent = '2/3: MetaMask 팝업에서 메시지에 서명해주세요...';
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const walletAddress = accounts[0];
+                const signature = await window.ethereum.request({ method: 'personal_sign', params: [nonce, walletAddress] });
+                walletStatus.textContent = '3/3: 서명 확인 및 지갑 연동 중...';
+                const linkResponse = await fetch(`${BACKEND_URL}/api/users/me/wallets`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({ address: walletAddress, signature: signature })
+                });
+                const result = await linkResponse.json();
+                if (!linkResponse.ok) throw new Error(result.message || '지갑 연동 최종 실패');
+                walletStatus.textContent = `🎉 성공!\n\n${result.message}\n연결된 지갑 주소: ${result.wallet.address}`;
+            } catch (error) {
+                walletStatus.textContent = `오류 발생: ${error.message}`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
