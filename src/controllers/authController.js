@@ -144,6 +144,7 @@ export const getMyProfile = async (req, res) => {
 
         res.status(200).json(profile);
     } catch (error) {
+        console.error("!!! GET MY PROFILE ERROR:", error);
         res.status(500).json({ message: 'Error fetching profile', error: error.message });
     }
 };
@@ -190,6 +191,46 @@ export const updateMyProfile = async (req, res) => {
 
         res.status(200).json({ message: "Profile updated successfully", profile: data[0] });
     } catch (error) {
+        console.error("!!! UPDATE MY PROFILE ERROR:", error);
         res.status(500).json({ message: 'Error updating profile', error: error.message });
+    }
+};
+
+/**
+ * @route   POST /api/users/sync-profile
+ * @desc    로그인 직후 사용자 프로필이 DB에 없으면 생성 (동기화)
+ */
+export const syncUserProfile = async (req, res) => {
+    const { id: userId, email } = req.user;
+    const userMetaData = req.body.userMetaData || {}; // 프론트에서 전달받은 메타데이터
+
+    try {
+        // 1. 해당 유저의 프로필이 이미 존재하는지 확인
+        const { data: profile, error: findError } = await supabase
+            .from('user_profiles')
+            .select('user_id')
+            .eq('user_id', userId)
+            .single();
+
+        if (findError && findError.code !== 'PGRST116') throw findError;
+
+        // 2. 프로필이 존재하지 않을 때만 새로 생성
+        if (!profile) {
+            const { error: createError } = await supabase.from('user_profiles').insert({
+                user_id: userId,
+                email: email, // 이메일 정보 추가
+                public_username: `user_${userId.substring(0, 8)}`, // 임시 닉네임
+                profile_image_url: userMetaData.avatar_url, // 소셜 프로필 이미지
+            });
+
+            if (createError) throw createError;
+            return res.status(201).json({ message: 'Profile created and synced.' });
+        }
+
+        // 이미 프로필이 존재하면 아무것도 하지 않음
+        return res.status(200).json({ message: 'Profile already exists.' });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error syncing user profile', error: error.message });
     }
 };

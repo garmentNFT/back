@@ -4,7 +4,8 @@ import {
     setupProfile, // 최초 프로필 설정용
     checkNickname,
     getMyProfile,
-    updateMyProfile
+    updateMyProfile,
+    syncUserProfile
 } from '../controllers/authController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 
@@ -24,5 +25,8 @@ router.get('/users/me', verifyToken, getMyProfile);
 
 // 프로필 텍스트 정보(닉네임, 자기소개) 수정
 router.put('/users/me/profile', verifyToken, updateMyProfile);
+
+// 로그인 직후 프로필 동기화
+router.post('/users/sync-profile', verifyToken, syncUserProfile);
 
 export default router;
