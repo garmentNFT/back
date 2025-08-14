@@ -234,3 +234,66 @@ export const syncUserProfile = async (req, res) => {
         res.status(500).json({ message: 'Error syncing user profile', error: error.message });
     }
 };
+
+/**
+ * @route   GET /api/users/me/nfts
+ * @desc    내가 만들거나 소유한 NFT 목록 조회
+ */
+export const getMyNfts = async (req, res) => {
+    const { id: userId } = req.user;
+    const { type } = req.query; // 'created' 또는 'collected'
+
+    if (!['created', 'collected'].includes(type)) {
+        return res.status(400).json({ message: "Query parameter 'type' must be 'created' or 'collected'." });
+    }
+
+    // 필터링할 컬럼 이름을 동적으로 설정
+    const filterColumn = type === 'created' ? 'creator_id' : 'owner_id';
+
+    try {
+        const { data, error } = await supabase
+            .from('nfts')
+            .select('*')
+            .eq(filterColumn, userId); // type에 따라 creator_id 또는 owner_id로 필터링
+
+        if (error) throw error;
+
+        res.status(200).json({
+            nfts: data,
+            pagination: {} // 페이지네이션은 추후 구현
+        });
+
+    } catch (error) {
+        console.error(`!!! GET MY NFTS (${type}) ERROR:`, error);
+        res.status(500).json({ message: 'Error fetching my NFTs', error: error.message });
+    }
+};
+
+/**
+ * @route   GET /api/users/me/transactions
+ * @desc    내 거래 내역 조회
+ */
+export const getMyTransactions = async (req, res) => {
+    const { id: userId } = req.user;
+
+    try {
+        // 내가 판매자(seller_id)이거나 구매자(buyer_id)인 모든 거래를 조회
+        const { data, error } = await supabase
+            .from('transactions')
+            .select('*')
+            .or(`seller_id.eq.${userId},buyer_id.eq.${userId}`)
+            .order('timestamp', { ascending: false }); // 최신순으로 정렬
+
+        if (error) throw error;
+
+        res.status(200).json({
+            transactions: data,
+            pagination: {} // 페이지네이션은 추후 구현
+        });
+
+    } catch (error) {
+        console.error("!!! GET MY TRANSACTIONS ERROR:", error);
+        res.status(500).json({ message: 'Error fetching my transactions', error: error.message });
+    }
+};
+

@@ -3,8 +3,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
+import nftRoutes from './routes/nftRoutes.js';
 
-// 에러 감지를 위한 try...catch 블록 시작
+
 try {
     console.log("[SERVER START] 1. server.js 파일 실행 시작");
 
@@ -28,7 +29,8 @@ try {
 
     app.use('/api', authRoutes);
     app.use('/api/users', walletRoutes);
-
+    app.use('/api/nfts', nftRoutes);
+  
     console.log("[SERVER START] 3. 라우트 설정 완료");
 
     const PORT = process.env.PORT || 5050;
@@ -36,7 +38,6 @@ try {
     app.listen(PORT, () => console.log(`[SERVER READY] Server running on port ${PORT}`));
 
 } catch (error) {
-    // ---- 어떤 에러든 여기서 잡아냅니다 ----
     console.error("!!!!!!!!!!!!!!!!! SERVER FAILED TO START !!!!!!!!!!!!!!!!!!");
     console.error(error);
     console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

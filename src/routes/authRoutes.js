@@ -5,7 +5,10 @@ import {
     checkNickname,
     getMyProfile,
     updateMyProfile,
-    syncUserProfile
+    syncUserProfile,
+    getMyNfts,
+    getMyTransactions,
+    
 } from '../controllers/authController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 
@@ -28,5 +31,12 @@ router.put('/users/me/profile', verifyToken, updateMyProfile);
 
 // 로그인 직후 프로필 동기화
 router.post('/users/sync-profile', verifyToken, syncUserProfile);
+
+// 내가 만든/소유한 NFT 목록 조회
+router.get('/users/me/nfts', verifyToken, getMyNfts);
+
+// 내 거래 내역 조회
+router.get('/users/me/transactions', verifyToken, getMyTransactions);
+
 
 export default router;
