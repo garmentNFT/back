@@ -1,9 +1,11 @@
 // back/src/routes/nftRoutes.js
 
 import { Router } from 'express';
-import { getAllNfts, getNftDetails, getDummyDataSummary, searchNfts  } from '../controllers/nftController.js';
+import multer from 'multer';
+import { getAllNfts, getNftDetails, searchNfts, mintNft  } from '../controllers/nftController.js';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 // NFT 검색 경로 
@@ -15,9 +17,8 @@ router.get('/', getAllNfts);
 // 특정 NFT 상세 정보 조회
 router.get('/:tokenId', getNftDetails);
 
-// 모든 더미 데이터를 조회하는 경로 
-router.get('/debug/all-data', getDummyDataSummary);
-
+// NFT 민팅 경로
+router.post('/mint', upload.single('image'), mintNft);
 
 
 export default router;
