@@ -221,7 +221,7 @@ export const mintNft = async (req, res) => {
 
         // --- 6. 최종 결과 반환 ---
         res.status(201).json({ 
-            message: 'NFT가 성공적으로 발행되고 DB에 저장되었습니다!', 
+            message: 'NFT가 성공적으로 발행되었습니다!', 
             nft: savedNft // 저장된 NFT 전체 정보를 반환
         });
 
